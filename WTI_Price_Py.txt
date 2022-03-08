@@ -1,0 +1,45 @@
+# Feb 14h, 2022: Little script to scrape WTI oil price off of marketwatch.com.
+# Note that the script only works properly during regular trading hours (roughly 10am to 4pm CST)
+
+import requests 
+from bs4 import BeautifulSoup
+# import re
+
+URL = "https://www.marketwatch.com/investing/future/crude%20oil%20-%20electronic"
+page = requests.get(URL)
+
+soup = BeautifulSoup(page.content, "html.parser")
+
+results = soup.find(id = "maincontent")
+
+# Print out the above results as a "prettify" object: 
+# print(results.prettify())
+
+text_results = (results.prettify())
+
+# Now that we have the raw HTML GET command as a text based string, 
+# we can use the "regex" library 're' to get the substring match for the price
+# of oil by searching for two substrings that we know the price will be between. 
+
+# # # --- Trying a different methodology that's native to the bs4 library:
+value_matches = results.find_all("div", class_ = "intraday__data")
+    
+for value_match in value_matches:
+    wti_quote = value_match.find("bg-quote")
+    #print(wti_quote.text)
+    wti_price = str(wti_quote.text)
+    
+value_matches = results.find_all("div", class_ = "intraday__timestamp")
+    
+# Now find the timestamp: 
+for value_match in value_matches:
+    wti_time = value_match.find("span", class_='timestamp__time')
+    #print(wti_time.text)
+    wti_time = str(wti_time.text)
+
+# Cut out the superfluous parts of the date string:
+wti_time_cut = wti_time[14:len(wti_time)]
+# Now, make the final combo string that we will paste out in the command line of Spyder: 
+Combo_String = 'The price of WTI is ' + wti_price + ', as of ' + wti_time_cut
+print(Combo_String)
+
